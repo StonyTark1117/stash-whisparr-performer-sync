@@ -28,9 +28,20 @@ jobs:
         uses: actions/upload-pages-artifact@v3
         with:
           path: dist/site
+  test-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Unit tests on Windows
+        env:
+          PYTHONPATH: plugin
+        run: python -m unittest discover -s tests -v
   publish:
     if: github.event_name != 'pull_request'
-    needs: test-and-build
+    needs: [test-and-build, test-windows]
     runs-on: ubuntu-latest
     environment:
       name: github-pages

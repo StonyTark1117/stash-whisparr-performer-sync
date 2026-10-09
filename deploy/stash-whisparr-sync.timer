@@ -4,6 +4,7 @@ Description=Poll Whisparr performer monitoring for Stash
 [Timer]
 OnBootSec=90s
 OnUnitInactiveSec=60s
+AccuracySec=5s
 Unit=stash-whisparr-sync.service
 
 [Install]
