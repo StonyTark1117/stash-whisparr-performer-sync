@@ -19,6 +19,7 @@ class TestPackage(TestCase):
                 index = (build_site.SITE/'index.yml').read_text()
                 path = re.search(r'^  path: (.+)$', index, re.M).group(1)
                 expected = re.search(r'^  sha256: ([a-f0-9]{64})$', index, re.M).group(1)
+                self.assertRegex(index, r'(?m)^  date: \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$')
                 archive = build_site.SITE/path
                 self.assertEqual(hashlib.sha256(archive.read_bytes()).hexdigest(), expected)
                 with zipfile.ZipFile(archive) as bundle:

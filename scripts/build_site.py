@@ -22,7 +22,7 @@ def main():
         for name in ('whisparrPerformerSync.yml', 'performer_sync.py', 'trigger_sync.py'):
             bundle.write(PLUGIN/name, name)
     digest = hashlib.sha256(package.read_bytes()).hexdigest()
-    day = datetime.date.today().isoformat()
+    day = datetime.datetime.now(datetime.timezone.utc).strftime('%Y-%m-%d %H:%M:%S')
     (SITE/'index.yml').write_text(
         f'- id: whisparrPerformerSync\n'
         f'  name: Whisparr Performer Sync\n'
