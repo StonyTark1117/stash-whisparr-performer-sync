@@ -76,6 +76,11 @@ class TestSync(unittest.TestCase):
         with contextlib.redirect_stdout(io.StringIO()):
             return Sync(self.api, self.path).run()
 
+    def test_initial_union_and_conflicting_changes(self):
+        self.assertTrue(desired(None, True, False))
+        self.assertTrue(desired(None, False, True))
+        self.assertFalse(desired({'s': True, 'w': False}, False, True))
+
     def test_whisparr_creates_favorite_and_is_idempotent(self):
         self.api.ws = [wp()]
         self.assertEqual(len(self.run_sync()['actions']), 2)

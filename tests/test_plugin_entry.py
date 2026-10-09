@@ -86,3 +86,22 @@ class TestPluginEntry(TestCase):
                  patch.object(plugin.Sync, 'run', return_value={'actions': [], 'problems': []}) as run:
                 plugin.main()
             run.assert_called_once_with()
+
+    def test_favorited_create_and_destroy_hooks_reach_sync(self):
+        for kind, original_input in (
+            ('Performer.Create.Post', {'favorite': True}),
+            ('Performer.Destroy.Post', None),
+        ):
+            with self.subTest(kind=kind), tempfile.TemporaryDirectory() as folder:
+                payload = {'server_connection': dict(CONNECTION, Dir=folder),
+                           'args': {'mode': 'hook', 'hookContext': {
+                               'type': kind, 'input': original_input}}}
+                api = type('Fake', (), {})()
+                api.c = {'sync_enabled': True, 'quality_profile_id': 6,
+                         'root_folder': '/media'}
+                api.w = lambda endpoint: [{'id': 6}] if endpoint == 'qualityprofile' else [{'path': '/media'}]
+                with patch('sys.stdin', io.StringIO(json.dumps(payload))), \
+                     patch.object(plugin, 'configured_api', return_value=api), \
+                     patch.object(plugin.Sync, 'run', return_value={'actions': [], 'problems': []}) as run:
+                    plugin.main()
+                run.assert_called_once_with()
