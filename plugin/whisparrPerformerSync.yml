@@ -1,6 +1,6 @@
 name: Whisparr Performer Sync
 description: Keep Stash performer favorites and Whisparr Eros v3 monitored performers in sync.
-version: 1.0.0
+version: 1.0.1
 url: https://github.com/StonyTark1117/stash-whisparr-performer-sync
 exec:
   - python3

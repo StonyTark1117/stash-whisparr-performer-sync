@@ -9,7 +9,7 @@ import zipfile
 ROOT = Path(__file__).resolve().parents[1]
 SITE = ROOT/'dist'/'site'
 PLUGIN = ROOT/'plugin'
-VERSION = '1.0.0'
+VERSION = '1.0.1'
 ARCHIVE = f'whisparrPerformerSync-{VERSION}.zip'
 
 

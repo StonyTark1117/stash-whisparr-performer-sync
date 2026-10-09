@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 """Stash plugin: synchronize favorite performers with Whisparr Eros v3 monitoring."""
-import fcntl
 import json
 import os
 from pathlib import Path
@@ -60,6 +59,28 @@ def atomic_json(path, value):
         os.fsync(f.fileno())
     os.chmod(temp, 0o600)
     os.replace(temp, path)
+
+
+def acquire_lock(lock):
+    """Try to hold a process lock until the file object is closed."""
+    if os.name == 'nt':
+        import msvcrt
+        lock.seek(0, os.SEEK_END)
+        if lock.tell() == 0:
+            lock.write(b'\0')
+            lock.flush()
+        lock.seek(0)
+        try:
+            msvcrt.locking(lock.fileno(), msvcrt.LK_NBLCK, 1)
+        except OSError:
+            return False
+    else:
+        import fcntl
+        try:
+            fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except BlockingIOError:
+            return False
+    return True
 
 
 def desired(previous, s, w):
@@ -396,13 +417,17 @@ def configured_api(connection):
     return api
 
 
-def validate(api):
+def validate_defaults(api):
     profiles = api.w('qualityprofile')
     roots = api.w('rootfolder')
     if not isinstance(profiles, list) or not any(p.get('id') == api.c['quality_profile_id'] for p in profiles):
         raise ValueError('Whisparr quality profile ID was not found')
     if not isinstance(roots, list) or not any(r.get('path') == api.c['root_folder'] for r in roots):
         raise ValueError('Whisparr root folder was not found')
+
+
+def validate(api):
+    validate_defaults(api)
     performers = api.w('performer')
     if not isinstance(performers, list):
         raise RuntimeError('Incomplete Whisparr performer listing')
@@ -434,17 +459,16 @@ def main():
         return validate(api)
     if not api.c['sync_enabled'] and mode != 'preview':
         return {'skipped': 'Sync is disabled in plugin settings'}
+    validate_defaults(api)
     data_dir = Path(connection['Dir'])/'whisparr-performer-sync'
     state_path = data_dir/'state.json'
     if mode == 'preview':
         return Sync(api, state_path).run(preview=True)
     data_dir.mkdir(mode=0o700, parents=True, exist_ok=True)
     lock_path = data_dir/'sync.lock'
-    with lock_path.open('w') as lock:
+    with lock_path.open('a+b') as lock:
         os.chmod(lock_path, 0o600)
-        try:
-            fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
-        except BlockingIOError:
+        if not acquire_lock(lock):
             return {'skipped': 'Another sync is running'}
         return Sync(api, state_path).run()
 

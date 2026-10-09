@@ -135,6 +135,17 @@ class TestSync(unittest.TestCase):
         self.assertTrue(self.api.ws[0]['monitored'])
         self.assertEqual(old, self.path.read_text())
 
+    def test_incomplete_whisparr_listing_cannot_be_interpreted_as_removal(self):
+        self.api.ws, self.api.ss = [wp()], [sp()]
+        self.run_sync()
+        old = self.path.read_text()
+        original = self.api.w
+        self.api.w = lambda path, method='GET', data=None: None if path == 'performer' else original(path, method, data)
+        with self.assertRaisesRegex(RuntimeError, 'Incomplete Whisparr'):
+            self.run_sync()
+        self.assertTrue(self.api.ss[0]['favorite'])
+        self.assertEqual(old, self.path.read_text())
+
     def test_failed_mutation_retries_and_state_survives_restart(self):
         self.api.ws, self.api.ss = [wp()], [sp()]
         self.run_sync()

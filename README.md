@@ -29,13 +29,25 @@ Whisparr has no Stash hook, so schedule the bundled `trigger_sync.py` on the Sta
 
 On Linux, create a mode-`0600` file containing your **Stash** API key, owned by the Stash service user. Adapt the paths and URL in `deploy/stash-whisparr-sync.service`, install that unit and `deploy/stash-whisparr-sync.timer` under `/etc/systemd/system/`, then run `systemctl daemon-reload && systemctl enable --now stash-whisparr-sync.timer`. The example polls one minute after each previous invocation. The plugin uses a process lock so overlapping runs do not compete.
 
-For Docker, cron, macOS launchd, or Windows Task Scheduler, periodically run:
+For a normal cron installation, use a one-minute entry (adjust paths and URL):
 
-```text
-python3 /path/to/stash/plugins/whisparrPerformerSync/trigger_sync.py --stash-url http://127.0.0.1:9999 --api-key-file /private/path/stash-api-key
+```cron
+* * * * * /usr/bin/python3 /path/to/stash/plugins/whisparrPerformerSync/trigger_sync.py --stash-url http://127.0.0.1:9999 --api-key-file /private/path/stash-api-key
 ```
 
-For Docker, run the scheduler where the Stash URL, plugin script, and key file are accessible (inside the container or in a sidecar). If Stash listens on a different port, change `--stash-url`.
+For Docker, run the scheduler where the Stash URL, plugin script, and key file are accessible (inside the container or in a sidecar). A host cron entry can invoke the script in a container named `stash` when the key is mounted inside it:
+
+```cron
+* * * * * docker exec stash python3 /root/.stash/plugins/whisparrPerformerSync/trigger_sync.py --stash-url http://127.0.0.1:9999 --api-key-file /run/secrets/stash-api-key
+```
+
+For Windows Task Scheduler, create a task that repeats every **1 minute indefinitely**. Set **Program/script** to your Python executable (for example `C:\Python313\python.exe`) and **Add arguments** to:
+
+```text
+"C:\Stash\plugins\whisparrPerformerSync\trigger_sync.py" --stash-url http://127.0.0.1:9999 --api-key-file "C:\Stash\private\stash-api-key"
+```
+
+Run the task as the same user that owns the Stash configuration and restrict the key file with Windows file permissions. For Stash itself, edit the plugin YAML's `exec` entry from `python3` to your Python executable if needed. The plugin uses an OS-level lock on both Unix and Windows.
 
 ## How conflicts and identities work
 
