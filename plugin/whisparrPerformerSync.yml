@@ -1,0 +1,50 @@
+name: Whisparr Performer Sync
+description: Keep Stash performer favorites and Whisparr Eros v3 monitored performers in sync.
+version: 1.0.0
+url: https://github.com/StonyTark1117/stash-whisparr-performer-sync
+exec:
+  - python3
+  - '{pluginDir}/performer_sync.py'
+interface: raw
+errLog: info
+settings:
+  sync_enabled:
+    displayName: Enable synchronization
+    type: BOOLEAN
+  whisparr_url:
+    displayName: Whisparr Eros v3 base URL
+    type: STRING
+  whisparr_api_key:
+    displayName: Whisparr API key (visible to Stash administrators)
+    type: STRING
+  root_folder:
+    displayName: Whisparr root folder path
+    type: STRING
+  quality_profile_id:
+    displayName: Whisparr quality profile ID
+    type: NUMBER
+  excluded_genders:
+    displayName: Excluded genders (comma-separated; blank includes all)
+    type: STRING
+tasks:
+  - name: Validate Whisparr sync configuration
+    description: Check API access, root folder, and quality profile without writing anything.
+    defaultArgs:
+      mode: validate
+  - name: Preview Whisparr performer sync
+    description: Show proposed favorite and monitoring changes without modifying data or state.
+    defaultArgs:
+      mode: preview
+  - name: Sync Whisparr monitored performers
+    description: Run one complete bidirectional synchronization pass.
+    defaultArgs:
+      mode: sync
+hooks:
+  - name: Sync Stash performer favorites to Whisparr
+    description: Reconcile favorites immediately after a relevant performer change.
+    triggeredBy:
+      - Performer.Create.Post
+      - Performer.Update.Post
+      - Performer.Destroy.Post
+    defaultArgs:
+      mode: hook

@@ -1,0 +1,9 @@
+[Unit]
+Description=Queue Stash Whisparr performer sync
+After=network-online.target stash.service
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=stash
+ExecStart=/usr/bin/python3 /var/lib/stash/.stash/plugins/whisparrPerformerSync/trigger_sync.py --stash-url http://127.0.0.1:9999 --api-key-file /var/lib/stash/.stash/whisparr-performer-sync/stash-api-key

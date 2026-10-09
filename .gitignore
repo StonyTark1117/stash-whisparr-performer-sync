@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+.pytest_cache/
+dist/
+*.env
+state.json
+status.json
+config.json
+*.key
+*.token

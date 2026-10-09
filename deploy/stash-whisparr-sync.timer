@@ -1,0 +1,10 @@
+[Unit]
+Description=Poll Whisparr performer monitoring for Stash
+
+[Timer]
+OnBootSec=90s
+OnUnitInactiveSec=60s
+Unit=stash-whisparr-sync.service
+
+[Install]
+WantedBy=timers.target
