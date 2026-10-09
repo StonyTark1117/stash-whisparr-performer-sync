@@ -27,7 +27,7 @@ The StashDB stash-box source must be configured in Stash for profile enrichment.
 
 Whisparr has no Stash hook, so schedule the bundled `trigger_sync.py` on the Stash host. It queues the Stash plugin task through GraphQL; the API key is read from a private file, never supplied on the command line.
 
-On Linux, create a mode-`0600` file containing your **Stash** API key, owned by the Stash service user. Adapt the paths and URL in `deploy/stash-whisparr-sync.service`, install that unit and `deploy/stash-whisparr-sync.timer` under `/etc/systemd/system/`, then run `systemctl daemon-reload && systemctl enable --now stash-whisparr-sync.timer`. The example polls one minute after each previous invocation. The plugin uses a process lock so overlapping runs do not compete.
+On Linux, create a mode-`0600` file containing your **Stash** API key, owned by the Stash service user. Adapt the paths and URL in `deploy/stash-whisparr-sync.service`, install that unit and `deploy/stash-whisparr-sync.timer` under `/etc/systemd/system/`, then run `systemctl daemon-reload && systemctl enable --now stash-whisparr-sync.timer`. The example assumes a plugin source local path of `whisparr-performer-sync-source`; Stash's installed path may differ, so locate its `trigger_sync.py`. The example polls one minute after each previous invocation. The plugin uses a process lock so overlapping runs do not compete.
 
 For a normal cron installation, use a one-minute entry (adjust paths and URL):
 
